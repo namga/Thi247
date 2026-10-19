@@ -1,0 +1,26 @@
+name: Refresh public metadata catalog
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 2 * * 1'
+permissions:
+  contents: write
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r crawler/requirements.txt
+      - name: Crawl limited metadata
+        run: python crawler/crawl.py --start https://thi247.com/ --max-pages 100 --delay 2 --out data/catalog.jsonl
+      - run: python crawler/export_csv.py data/catalog.jsonl data/catalog.csv
+      - run: python crawler/export_json.py data/catalog.jsonl public/data/catalog.json
+      - name: Commit catalog if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/catalog.jsonl data/catalog.csv public/data/catalog.json
+          git diff --cached --quiet || (git commit -m "Refresh public metadata catalog" && git push)
