@@ -72,7 +72,7 @@ function settingsView() {
   </main>`;
 }
 function resourceCards(list) {
-  return list.length ? `<section class="cards">${list.map(x=>`<article class="card"><div class="chips"><span>${escapeHtml(x.grade||'Chưa phân lớp')}</span><span>${escapeHtml(x.subject||'Chưa phân môn')}</span></div><h3>${escapeHtml(x.title||'Tài liệu chưa có tiêu đề')}</h3><p>${escapeHtml(x.description||'Mở nguồn để xem thông tin chi tiết.')}</p><div class="meta">${escapeHtml(x.resource_type||'Tài liệu')} · ${escapeHtml(x.rights_status||'unknown')}</div><a class="source" href="${escapeHtml(x.source_url||'#')}" target="_blank" rel="noopener noreferrer">Mở nguồn ↗</a></article>`).join('')}</section>` :
+  return list.length ? `<section class="cards">${list.map(x=>`<article class="card"><div class="chips"><span>${escapeHtml(x.grade ? 'Lớp '+x.grade : 'Chưa phân lớp')}</span><span>${escapeHtml(x.subject||'Chưa phân môn')}</span></div><h3>${escapeHtml(x.title||'Tài liệu chưa có tiêu đề')}</h3><p>${escapeHtml(x.description||'Mở nguồn để xem thông tin chi tiết.')}</p><div class="meta">${escapeHtml(({textbook:'Tài liệu',exam:'Đề thi',article:'Chuyên đề'})[x.resource_type]||x.resource_type||'Tài liệu')} · ${escapeHtml(x.rights_status==='unknown'?'Quyền sử dụng chưa xác minh':(x.rights_status||''))}</div><a class="source" href="${escapeHtml(x.source_url||'#')}" target="_blank" rel="noopener noreferrer">Mở nguồn ↗</a></article>`).join('')}</section>` :
   `<div class="empty"><div class="empty-icon">⌕</div><h3>Chưa có tài liệu phù hợp</h3><p>Chạy crawler metadata, kiểm tra quyền sử dụng và đưa dữ liệu đã duyệt vào kho trước khi phát hành.</p></div>`;
 }
 function homeView() {
@@ -82,7 +82,7 @@ function homeView() {
     (!state.type || x.resource_type === state.type) &&
     (!state.q || `${x.title||''} ${x.description||''} ${x.subject||''} ${x.grade||''}`.toLowerCase().includes(state.q.toLowerCase()))
   );
-  return `<header class="hero"><div class="brand"><img src="/icons/icon-192.png" alt="Kho Học Tập"><div><div class="eyebrow">HỌC TẬP • MIỄN PHÍ</div><h1>Kho Học Tập</h1></div></div><p>Tìm tài liệu theo lớp, môn học và chủ đề.</p></header>
+  return `<header class="hero"><div class="brand"><img src="/icons/icon-192.png" alt="Kho Học Tập"><div><div class="eyebrow">HỌC TẬP • MIỄN PHÍ</div><h1>Kho Học Tập</h1></div></div><p>Tìm tài liệu theo lớp, môn học và chủ đề. Hiện có ${state.items.length} liên kết metadata; mở nguồn để xem tài liệu trên THI247.</p></header>
   <main><section class="search-panel"><label class="search">Tìm tài liệu<input id="q" placeholder="Ví dụ: Toán lớp 8, lịch sử..." value="${escapeHtml(state.q)}"></label>
   <div class="filters">${options('grade','Lớp')}${options('subject','Môn học')}${options('resource_type','Loại tài liệu')}</div></section>
   <div class="results-head"><h2>${state.page==='library'?'Thư viện tài liệu':'Tài liệu nổi bật'}</h2><span>${list.length} kết quả</span></div>
@@ -104,9 +104,9 @@ function render() {
 async function init() {
   loadSettings();
   try { const response = await fetch('/data/catalog.json'); if(response.ok) state.items = await response.json(); } catch {}
-  if (!state.items.length) state.items = [
-    {title:'Kho dữ liệu đang được chuẩn bị',description:'Chưa có tài liệu được nhập. Sau khi crawler chạy, hãy kiểm tra nguồn và quyền sử dụng trước khi xuất bản.',grade:'Lớp 1–12',subject:'Tất cả môn',resource_type:'Hướng dẫn',rights_status:'metadata_only',source_url:'https://thi247.com/'}
-  ];
+  if (!state.items.length) {
+    try { const seed = await fetch('/data/seed-catalog.json'); if (seed.ok) state.items = await seed.json(); } catch {}
+  }
   render();
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('/sw.js').catch(()=>{});
   if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{if(state.settings.theme==='system')applySettings();});

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+android/
+.venv/
+__pycache__/
+*.pyc
+.env

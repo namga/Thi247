@@ -77,3 +77,11 @@ Trong Android Studio chọn Build > Build APK(s), hoặc push lên GitHub để 
 3. Commit to `main`.
 4. Open Actions and run `Build Android APK`; download the `kho-hoc-tap-debug-apk` artifact after success.
 5. Open `Refresh public metadata catalog` manually only after reviewing `robots.txt`, terms, and permission. The default schedule is weekly and limited to 100 HTML pages per run.
+
+## Troubleshooting: `Failed to find package 'tools'`
+Google removed the legacy Android SDK `tools` package. The APK workflow uses `android-actions/setup-android@v4` and explicitly installs only `platform-tools`, avoiding the retired package. If your repository still has the old workflow, replace `.github/workflows/build-apk.yml` with this version, commit, then rerun Actions.
+
+
+## Danh mục khởi đầu
+
+`public/data/seed-catalog.json` chứa các liên kết metadata khởi đầu tới một số danh mục/tài liệu công khai trên THI247. Ứng dụng hiển thị liên kết nguồn ngay cả khi crawler chưa chạy hoặc không thu thập được trang nào. Đây chưa phải kho đầy đủ lớp 1–12; quyền sao chép/phân phối tài liệu chưa được xác minh nên app chỉ mở trang nguồn, không tải lại nội dung. Workflow xuất JSON giữ lại danh mục khởi đầu khi crawler trả về 0 kết quả.
