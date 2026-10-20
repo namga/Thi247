@@ -1,0 +1,30 @@
+name: Download public resource files for review
+on:
+  workflow_dispatch:
+    inputs:
+      max_pages:
+        description: 'Maximum THI247 pages to inspect (1-500)'
+        required: true
+        default: '100'
+permissions:
+  contents: read
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r crawler/requirements.txt
+      - name: Crawl and download direct files allowed by robots.txt
+        run: python crawler/crawl.py --start https://thi247.com/ --max-pages "${{ inputs.max_pages }}" --delay 2 --download-files --max-file-mb 20 --resources-dir downloads/review --out downloads/catalog.jsonl
+      - name: Package downloaded resources for manual review
+        run: |
+          python crawler/export_json.py downloads/catalog.jsonl downloads/catalog.json
+          cd downloads && zip -qr ../thi247-resource-review.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: thi247-resource-review
+          path: thi247-resource-review.zip
+          if-no-files-found: error

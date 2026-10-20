@@ -64,7 +64,7 @@ function settingsView() {
     </section>
     <section class="settings-card">
       <h3>Dữ liệu & quyền sử dụng</h3>
-      <p>Kho ưu tiên metadata và liên kết nguồn. Chỉ lưu bản sao tài liệu khi quyền sử dụng đã được xác minh.</p>
+      <p>Crawler có thể tải file tài liệu trực tiếp khi đường dẫn được robots.txt cho phép. File đã tải được đóng gói trong /resources; quyền phân phối lại vẫn cần được xác minh trước khi phát hành công khai.</p>
       <a class="source" href="https://thi247.com/" target="_blank" rel="noopener noreferrer">Mở THI247.com ↗</a>
       <button class="secondary-button" id="reset-settings">Khôi phục cài đặt mặc định</button>
     </section>
@@ -72,7 +72,7 @@ function settingsView() {
   </main>`;
 }
 function resourceCards(list) {
-  return list.length ? `<section class="cards">${list.map(x=>`<article class="card"><div class="chips"><span>${escapeHtml(x.grade ? 'Lớp '+x.grade : 'Chưa phân lớp')}</span><span>${escapeHtml(x.subject||'Chưa phân môn')}</span></div><h3>${escapeHtml(x.title||'Tài liệu chưa có tiêu đề')}</h3><p>${escapeHtml(x.description||'Mở nguồn để xem thông tin chi tiết.')}</p><div class="meta">${escapeHtml(({textbook:'Tài liệu',exam:'Đề thi',article:'Chuyên đề'})[x.resource_type]||x.resource_type||'Tài liệu')} · ${escapeHtml(x.rights_status==='unknown'?'Quyền sử dụng chưa xác minh':(x.rights_status||''))}</div><a class="source" href="${escapeHtml(x.source_url||'#')}" target="_blank" rel="noopener noreferrer">Mở nguồn ↗</a></article>`).join('')}</section>` :
+  return list.length ? `<section class="cards">${list.map(x=>`<article class="card"><div class="chips"><span>${escapeHtml(x.grade ? 'Lớp '+x.grade : 'Chưa phân lớp')}</span><span>${escapeHtml(x.subject||'Chưa phân môn')}</span></div><h3>${escapeHtml(x.title||'Tài liệu chưa có tiêu đề')}</h3><p>${escapeHtml(x.description||'Mở nguồn để xem thông tin chi tiết.')}</p><div class="meta">${escapeHtml(({textbook:'Tài liệu',exam:'Đề thi',article:'Chuyên đề'})[x.resource_type]||x.resource_type||'Tài liệu')} · ${escapeHtml(x.rights_status==='unknown'?'Quyền sử dụng chưa xác minh':(x.rights_status||''))}</div>${x.content_stored && x.local_file ? `<a class="source" href="${escapeHtml(x.local_file)}" target="_blank" rel="noopener noreferrer">Mở tài liệu đã tải ↗</a>` : `<a class="source" href="${escapeHtml(x.source_url||'#')}" target="_blank" rel="noopener noreferrer">Mở trang nguồn ↗</a>`}</article>`).join('')}</section>` :
   `<div class="empty"><div class="empty-icon">⌕</div><h3>Chưa có tài liệu phù hợp</h3><p>Chạy crawler metadata, kiểm tra quyền sử dụng và đưa dữ liệu đã duyệt vào kho trước khi phát hành.</p></div>`;
 }
 function homeView() {
@@ -82,7 +82,7 @@ function homeView() {
     (!state.type || x.resource_type === state.type) &&
     (!state.q || `${x.title||''} ${x.description||''} ${x.subject||''} ${x.grade||''}`.toLowerCase().includes(state.q.toLowerCase()))
   );
-  return `<header class="hero"><div class="brand"><img src="/icons/icon-192.png" alt="Kho Học Tập"><div><div class="eyebrow">HỌC TẬP • MIỄN PHÍ</div><h1>Kho Học Tập</h1></div></div><p>Tìm tài liệu theo lớp, môn học và chủ đề. Hiện có ${state.items.length} liên kết metadata; mở nguồn để xem tài liệu trên THI247.</p></header>
+  return `<header class="hero"><div class="brand"><img src="/icons/icon-192.png" alt="Kho Học Tập"><div><div class="eyebrow">HỌC TẬP • MIỄN PHÍ</div><h1>Kho Học Tập</h1></div></div><p>Tìm tài liệu theo lớp, môn học và chủ đề. ${state.items.filter(x=>x.content_stored&&x.local_file).length} file đã tải trong kho · ${state.items.length} mục được lập chỉ mục.</p></header>
   <main><section class="search-panel"><label class="search">Tìm tài liệu<input id="q" placeholder="Ví dụ: Toán lớp 8, lịch sử..." value="${escapeHtml(state.q)}"></label>
   <div class="filters">${options('grade','Lớp')}${options('subject','Môn học')}${options('resource_type','Loại tài liệu')}</div></section>
   <div class="results-head"><h2>${state.page==='library'?'Thư viện tài liệu':'Tài liệu nổi bật'}</h2><span>${list.length} kết quả</span></div>

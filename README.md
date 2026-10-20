@@ -85,3 +85,13 @@ Google removed the legacy Android SDK `tools` package. The APK workflow uses `an
 ## Danh mục khởi đầu
 
 `public/data/seed-catalog.json` chứa các liên kết metadata khởi đầu tới một số danh mục/tài liệu công khai trên THI247. Ứng dụng hiển thị liên kết nguồn ngay cả khi crawler chưa chạy hoặc không thu thập được trang nào. Đây chưa phải kho đầy đủ lớp 1–12; quyền sao chép/phân phối tài liệu chưa được xác minh nên app chỉ mở trang nguồn, không tải lại nội dung. Workflow xuất JSON giữ lại danh mục khởi đầu khi crawler trả về 0 kết quả.
+
+
+## Tải resource thật (PDF/Word và tài liệu tương thích)
+
+Workflow `Download public resource files for review` chạy thủ công, tìm liên kết tải trực tiếp trên THI247, kiểm tra `robots.txt`, giới hạn file tối đa 20 MB và đóng gói các file tải thành công vào Artifact để kiểm tra trước. Crawler ghi `content_stored`, `local_file`, `content_hash` và trạng thái tải; sau khi rà soát quyền sử dụng, các file được phép dùng có thể được đưa vào `public/resources/` để app hiện nút **Mở tài liệu đã tải** thay vì chỉ mở trang nguồn.
+
+- Chạy thử thủ công: `python crawler/crawl.py --start https://thi247.com/ --max-pages 100 --delay 2 --download-files --max-file-mb 20 --resources-dir downloads/review --out downloads/catalog.jsonl`
+- Nếu `robots.txt` chặn, máy chủ không trả file, liên kết chuyển sang host ngoài danh sách cho phép, hoặc định dạng không được hỗ trợ, crawler sẽ bỏ qua và ghi log; không vượt CAPTCHA, đăng nhập, paywall hay cơ chế bảo vệ.
+- Tài liệu tải công khai không đồng nghĩa được phép tái phân phối. Workflow tải file không tự động commit hoặc triển khai file bên thứ ba lên app; trước khi đưa file vào `public/resources/` hoặc phát hành APK, cần kiểm tra quyền/giấy phép hoặc xin phép chủ sở hữu.
+- Workflow hiện chỉ tải file từ host `thi247.com`/`www.thi247.com`. Có thể mở rộng host sau khi rà soát chính sách và quyền sử dụng của từng nguồn.

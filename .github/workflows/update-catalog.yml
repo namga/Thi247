@@ -15,7 +15,7 @@ jobs:
           python-version: '3.12'
       - run: pip install -r crawler/requirements.txt
       - name: Crawl limited metadata
-        run: python crawler/crawl.py --start https://thi247.com/ --max-pages 100 --delay 2 --out data/catalog.jsonl
+        run: python crawler/crawl.py --start https://thi247.com/ --max-pages 250 --delay 2 --out data/catalog.jsonl
       - run: python crawler/export_csv.py data/catalog.jsonl data/catalog.csv
       - run: python crawler/export_json.py data/catalog.jsonl public/data/catalog.json
       - name: Commit catalog if changed
